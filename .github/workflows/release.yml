@@ -1,0 +1,59 @@
+name: Build and release
+
+# Manually triggered from the Actions tab. Provide the release tag, which must
+# match the version in fspy_blender/blender_manifest.toml (see the guard below).
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v2.0.0) — must match the manifest version'
+        required: true
+  # Uncomment to also run the build (without releasing) on pull requests.
+  # pull_request:
+
+permissions:
+  contents: write   # required to create the release and upload the zip asset
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'   # matches the Python bundled with Blender 4.2+
+
+      - name: Run unit tests
+        run: python -m unittest test.test
+
+      # Guard: refuse to release if the requested tag and the manifest version
+      # disagree, so a mismatched zip can never be published.
+      - name: Check tag matches manifest version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          version=$(grep -E '^version\s*=' fspy_blender/blender_manifest.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          expected="v${version}"
+          if [ "${{ github.event.inputs.tag }}" != "${expected}" ]; then
+            echo "::error::Tag '${{ github.event.inputs.tag }}' does not match manifest version '${expected}'"
+            exit 1
+          fi
+          echo "Tag matches manifest version ${expected}"
+
+      - name: Build extension zip
+        run: python build.py
+
+      - name: Upload zip as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fspy-blender-extension
+          path: dist/*.zip
+
+      # - name: Create GitHub release
+      #   if: github.event_name == 'workflow_dispatch'
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     gh release create "${{ github.event.inputs.tag }}" dist/*.zip \
+      #       --title "${{ github.event.inputs.tag }}" \
+      #       --generate-notes
