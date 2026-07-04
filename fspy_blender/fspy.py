@@ -34,25 +34,33 @@ class CameraParameters:
 
 class Project:
   def __init__(self, project_path):
-    project_file = open(project_path, "rb")
+    with open(project_path, "rb") as project_file:
+        # The header consists of four little endian uint32s:
+        # file id, project version, state string size and image buffer size.
+        header = project_file.read(16)
+        if len(header) < 16:
+            raise ParsingError("Trying to import a file that is not an fSpy project")
+        file_id, self.project_version, state_string_size, image_buffer_size = unpack('<IIII', header)
 
-    file_id = unpack('<I', project_file.read(4))[0]
-    if 2037412710 != file_id:
-        raise ParsingError("Trying to import a file that is not an fSpy project")
-    self.project_version = unpack('<I', project_file.read(4))[0]
-    if self.project_version != 1:
-        raise ParsingError("Unsupported fSpy project file version " + str(self.project_version))
+        if 2037412710 != file_id:
+            raise ParsingError("Trying to import a file that is not an fSpy project")
+        if self.project_version != 1:
+            raise ParsingError("Unsupported fSpy project file version " + str(self.project_version))
+        if image_buffer_size == 0:
+            raise ParsingError("Trying to import an fSpy project with no image data")
 
-    state_string_size = unpack('<I', project_file.read(4))[0]
-    image_buffer_size = unpack('<I', project_file.read(4))[0]
+        try:
+            state = json.loads(project_file.read(state_string_size).decode('utf-8'))
+        except (ValueError, UnicodeDecodeError) as e:
+            raise ParsingError("Could not parse the fSpy project data: " + str(e))
 
-    if image_buffer_size == 0:
-        raise ParsingError("Trying to import an fSpy project with no image data")
+        try:
+            self.camera_parameters = CameraParameters(state["cameraParameters"])
+            calibration_settings = state["calibrationSettingsBase"]
+            self.reference_distance_unit = calibration_settings["referenceDistanceUnit"]
+        except KeyError as e:
+            raise ParsingError("The fSpy project is missing expected data: " + str(e))
 
-    project_file.seek(16)
-    state = json.loads(project_file.read(state_string_size).decode('utf-8'))
-    self.camera_parameters = CameraParameters(state["cameraParameters"])
-    calibration_settings = state["calibrationSettingsBase"]
-    self.reference_distance_unit = calibration_settings["referenceDistanceUnit"]
-    self.image_data = project_file.read(image_buffer_size)
+        self.image_data = project_file.read(image_buffer_size)
+
     self.file_name = os.path.basename(project_path)
