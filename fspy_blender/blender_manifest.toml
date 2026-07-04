@@ -1,0 +1,27 @@
+schema_version = "1.0.0"
+
+# Unique identifier for the extension. Also used as the module name once
+# installed, which is why relative imports in the package keep working.
+id = "fspy_blender"
+version = "2.0.0"
+name = "Import fSpy project"
+tagline = "Import background image and camera parameters from fSpy"
+maintainer = "Per Gantelius"
+type = "add-on"
+
+# Minimum Blender version that supports the extensions platform.
+blender_version_min = "4.2.0"
+
+# SPDX license identifier, matching the GPLv3 headers in the source files.
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+# Must be chosen from Blender's list of allowed add-on tags.
+tags = ["Import-Export"]
+
+website = "https://github.com/stuffmatic/fSpy-Blender"
+
+copyright = [
+  "2018 Per Gantelius",
+]

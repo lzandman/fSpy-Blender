@@ -1,38 +1,47 @@
+# Builds a distributable extension zip.
+#
+# The officially supported way to package a Blender extension is
+#
+#     blender --command extension build
+#
+# run from inside the fspy_blender directory. This script reproduces the same
+# result without requiring a Blender executable on PATH: it bundles the
+# manifest and the Python sources at the root of the zip, which is the layout
+# the extensions platform expects.
+
 import glob
 import os
+import re
 import zipfile
 
 src_dir_name = 'fspy_blender'
-init_file_path = os.path.join(src_dir_name, '__init__.py')
-init_file = open(init_file_path)
-version_parts = []
-for line in init_file.readlines():
-    if '"version":' in line:
-        version_string = line.split("(")[1]
-        version_string = version_string.split(")")[0]
-        version_parts = version_string.split(",")
-        version_parts = map(str.strip, version_parts)
-        break
-init_file.close()
+manifest_path = os.path.join(src_dir_name, 'blender_manifest.toml')
 
-if len(version_parts) == 0:
-    raise "Could not extract version number from " + init_file_path
+# Extract the version string from the manifest
+version = None
+with open(manifest_path) as manifest_file:
+    for line in manifest_file:
+        match = re.match(r'\s*version\s*=\s*"([^"]+)"', line)
+        if match:
+            version = match.group(1)
+            break
 
-dist_archive_name = "fSpy-Blender-" + ".".join(version_parts) + ".zip"
+if version is None:
+    raise RuntimeError("Could not extract version number from " + manifest_path)
 
 dist_dir_name = "dist"
+os.makedirs(dist_dir_name, exist_ok=True)
 
-if not os.path.exists(dist_dir_name):
-    os.makedirs(dist_dir_name)
+dist_archive_name = "fSpy-Blender-" + version + ".zip"
 
-zipf = zipfile.ZipFile(
+with zipfile.ZipFile(
     os.path.join(dist_dir_name, dist_archive_name),
     'w',
     zipfile.ZIP_DEFLATED
-)
+) as zipf:
+    # The manifest and Python files must sit at the root of the extension zip
+    zipf.write(manifest_path, os.path.basename(manifest_path))
+    for py_file in sorted(glob.glob(os.path.join(src_dir_name, '*.py'))):
+        zipf.write(py_file, os.path.basename(py_file))
 
-for py_file in glob.glob(os.path.join(src_dir_name, '*.py')):
-    zipf.write(py_file)
-
-zipf.close()
-
+print("Wrote " + os.path.join(dist_dir_name, dist_archive_name))

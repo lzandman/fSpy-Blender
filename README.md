@@ -1,6 +1,6 @@
 # What is this?
 
-This is the official [fSpy](https://fspy.io) importer add-on for [Blender](https://blender.org). The two images below show an fSpy project (top) and a matching Blender camera created by the importer (bottom).
+This is the official [fSpy](https://fspy.io) importer add-on for [Blender](https://blender.org), packaged as a [Blender extension](https://docs.blender.org/manual/en/latest/advanced/extensions/index.html) (requires Blender 4.2 or later). The two images below show an fSpy project (top) and a matching Blender camera created by the importer (bottom).
 
 ![An example fSpy project](readme_images/help_fspy.jpg)
 
@@ -16,23 +16,20 @@ This is the official [fSpy](https://fspy.io) importer add-on for [Blender](https
 
 If you're using Safari, make sure you __download the add-on by right clicking and choosing "Download Linked File"__. This prevents the downloaded file from getting unzipped automatically.
 
-## 2. Install the add-on
+## 2. Install the extension
 
-Open the preferences window by selecting Preferences from the Edit menu
+The quickest way is to __drag and drop the downloaded zip file into a running Blender window__ and confirm the installation dialog.
 
-![Edit -> Preferences](readme_images/help_edit_preferences.png)
+Alternatively, install it from the preferences window:
 
-Select the _Add-ons_ tab and press the _Install_ button
+1. Open the preferences window by selecting Preferences from the Edit menu.
 
-![Install add-on](readme_images/help_addons_install.png)
+   ![Edit -> Preferences](readme_images/help_edit_preferences.png)
 
-Select the downloaded zip-file and press _Install Add-on from file_
+2. Select the _Add-ons_ tab, click the drop-down arrow (▾) in the top right corner and choose _Install from Disk…_
+3. Select the downloaded zip file.
 
-![Select the zip file](readme_images/help_select_zip.png)
-
-Locate the fSpy importer in the add-on list and enable it by pressing the checkbox.
-
-![Enable add-on](readme_images/help_enable_addon.png)
+Unlike legacy add-ons, extensions are enabled automatically when installed, so there is no checkbox to tick afterwards. You can confirm that _Import fSpy project_ appears (and is enabled) in the _Add-ons_ list.
 
 ## 3. Import an fSpy project file
 
@@ -50,6 +47,8 @@ __Update existing import (if any)__ - If checked, any previously created camera 
 
 __Import background image__ - If checked, the image from the fSpy project file will be used as the background image for the Blender camera.
 
-# Support for Blender versions older than 2.80
+# Blender version compatibility
 
-Starting with version 1.0.3, the addon is only compatible with Blender 2.80 and up. If you are using an older Blender version, please [download version 1.0.2](https://github.com/stuffmatic/fSpy-Blender/releases/tag/v1.0.2) of the add-on.
+- __Blender 4.2 and up__: use the latest version, distributed as a Blender extension.
+- __Blender 2.80 – 4.1__: use the legacy add-on [version 1.0.3](https://github.com/stuffmatic/fSpy-Blender/releases/tag/v1.0.3), installed via the _Add-ons_ tab.
+- __Blender older than 2.80__: use [version 1.0.2](https://github.com/stuffmatic/fSpy-Blender/releases/tag/v1.0.2) of the add-on.
